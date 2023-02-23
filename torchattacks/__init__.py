@@ -58,7 +58,7 @@ __all__ = [
 
     "FAB", "AutoAttack", "Square",
 
-    "MultiAttack", "LGV",
+    "MultiAttack", "LGV", "Alion"
 ]
 __wrapper__ = [
     "LGV", "MultiAttack",
