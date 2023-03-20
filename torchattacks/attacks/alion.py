@@ -8,7 +8,7 @@ class Alion(Attack):
 
     def __init__(self, model, eps=8/255,
                  rho=0.9, steps=10, random_start=True):
-        super().__init__("SUN", model)
+        super().__init__("Alion", model)
         self.eps = eps
         # self.alpha = alpha
         self.rho = rho
