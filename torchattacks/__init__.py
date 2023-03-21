@@ -22,7 +22,7 @@ from .attacks.pgdrs import PGDRS
 from .attacks.sinifgsm import SINIFGSM
 from .attacks.vmifgsm import VMIFGSM
 from .attacks.vnifgsm import VNIFGSM
-from .attacks.alion import Alion
+from .attacks.cfgsm import CFGSM
 
 # L2 attacks
 from .attacks.cw import CW
@@ -59,7 +59,7 @@ __all__ = [
 
     "FAB", "AutoAttack", "Square",
 
-    "MultiAttack", "LGV", "Alion"
+    "MultiAttack", "LGV", "CFGSM"
 ]
 __wrapper__ = [
     "LGV", "MultiAttack",
