@@ -41,6 +41,8 @@ class BruteForceUniform(Attack):
         images = images.clone().detach().to(self.device)
         labels = labels.clone().detach().to(self.device)
 
+        adv_images = torch.empty_like(images)
+
         rejected = torch.zeros_like(labels).bool()
 
         K = torch.zeros_like(labels)
@@ -49,6 +51,7 @@ class BruteForceUniform(Attack):
         with torch.no_grad():
 
             while not rejected.all():
+                
                 x = images[~rejected]
                 xs = x.repeat(self.pop // len(x), 1, 1, 1, 1)
                 ub = torch.clamp(x + self.eps, min = 0, max = 1)
@@ -56,7 +59,11 @@ class BruteForceUniform(Attack):
                 xs = (ub - lb) * torch.rand_like(xs) + lb
 
                 outputs = self.get_logits(xs.view(-1, *xs.shape[2:])).view(xs.size(0), xs.size(1), -1)
-                K.masked_scatter_(~rejected, K[~rejected] + (outputs.argmax(-1) == labels[~rejected]).sum(dim = 0))
+                preds = outputs.argmax(-1) == labels[~rejected]
+                
+                adv_images[~rejected] = torch.gather(xs, 0, preds.int().argmin(0).view(-1, 1, 1, 1).expand(1, *xs.shape[1:])).squeeze(0)
+
+                K.masked_scatter_(~rejected, K[~rejected] + preds.sum(dim = 0))
                 N.masked_scatter_(~rejected, N[~rejected] + len(outputs))
 
                 for i in range(len(images)):
@@ -64,4 +71,4 @@ class BruteForceUniform(Attack):
                         rejected[i] = bool(binomtest(K[i], N[i], p=self.mu, alternative='two-sided').pvalue < self.alpha)
 
 
-        return ModelOutput(rejected = rejected, K = K, N = N)
+        return ModelOutput(adv_images = adv_images, K = K, N = N, rejected = rejected)
