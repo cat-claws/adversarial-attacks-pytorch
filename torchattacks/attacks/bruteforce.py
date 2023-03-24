@@ -26,12 +26,13 @@ class BruteForceUniform(Attack):
         >>> adv_images = attack(images, labels)
 
     """
-    def __init__(self, model, eps=8/255, alpha = 5/100, mu = 0.95, pop=128):
+    def __init__(self, model, eps=8/255, alpha = 5/100, mu = 0.95, pop=128, verbose=False):
         super().__init__("BruteForceUniform", model)
         self.eps = eps
         self.alpha = alpha
         self.pop = pop
         self.mu = mu
+        self.verbose = verbose
         self.supported_mode = ['default', 'targeted']
 
     def forward(self, images, labels):
@@ -69,6 +70,9 @@ class BruteForceUniform(Attack):
                 for i in range(len(images)):
                     if not rejected[i]:
                         rejected[i] = bool(binomtest(K[i], N[i], p=self.mu, alternative='two-sided').pvalue < self.alpha)
+
+                if self.verbose:
+                    print(f'rejected: {round(rejected.float().mean().item(), 5)}; K<N: {round((K<N).float().mean().item(), 5)}', K.sum().item())
 
 
         return ModelOutput(adv_images = adv_images, K = K, N = N, rejected = rejected)
