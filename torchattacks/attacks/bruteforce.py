@@ -58,6 +58,7 @@ class BruteForceUniform(Attack):
                 ub = torch.clamp(x + self.eps, min = 0, max = 1)
                 lb = torch.clamp(x - self.eps, min = 0, max = 1)
                 xs = (ub - lb) * torch.rand_like(xs) + lb
+                xs = (xs * 255).int() / 255.
 
                 outputs = self.get_logits(xs.view(-1, *xs.shape[2:])).view(xs.size(0), xs.size(1), -1)
                 preds = outputs.argmax(-1) == labels[~rejected]
