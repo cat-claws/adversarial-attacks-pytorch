@@ -56,6 +56,8 @@ class APGD(Attack):
         r"""
         Overridden.
         """
+        self._check_inputs(images) 
+
         images = images.clone().detach().to(self.device)
         labels = labels.clone().detach().to(self.device)
         _, adv_images = self.perturb(images, labels, cheap=True)
@@ -104,7 +106,7 @@ class APGD(Attack):
         elif self.loss == 'dlr':
             criterion_indiv = self.dlr_loss
         else:
-            raise ValueError('unknowkn loss')
+            raise ValueError('unknown loss')
         
         x_adv.requires_grad_()
         grad = torch.zeros_like(x)

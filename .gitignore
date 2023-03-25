@@ -13,7 +13,6 @@ models/*
 */.*
 MENIFEST.in
 setup.cfg
-setup.py
 _commit.bat
 
 autoattack/*
