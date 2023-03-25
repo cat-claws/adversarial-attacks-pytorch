@@ -23,8 +23,8 @@ from .attacks.sinifgsm import SINIFGSM
 from .attacks.vmifgsm import VMIFGSM
 from .attacks.vnifgsm import VNIFGSM
 from .attacks.cfgsm import CFGSM
-from .attacks.bruteforce import BruteForceUniform
 from .attacks.spsa import SPSA
+from .attacks.bruteforce import BruteForceUniform, Proci
 
 # L2 attacks
 from .attacks.cw import CW

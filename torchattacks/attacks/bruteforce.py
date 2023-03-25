@@ -26,7 +26,7 @@ class BruteForceUniform(Attack):
         >>> adv_images = attack(images, labels)
 
     """
-    def __init__(self, model, eps=8/255, alpha = 5/100, mu = 0.95, pop=128, verbose=False):
+    def __init__(self, model, eps=8/255, alpha = 1e-2, mu = 0.95, pop=128, verbose=False):
         super().__init__("BruteForceUniform", model)
         self.eps = eps
         self.alpha = alpha
@@ -77,3 +77,28 @@ class BruteForceUniform(Attack):
 
 
         return ModelOutput(adv_images = adv_images, K = K, N = N, rejected = rejected)
+
+from math import ceil
+
+class Proci(BruteForceUniform):
+
+    def __init__(self, model, eps=8/255, alpha = 1e-2, mu = 0.95, pop=128, verbose=False, neighbour = 10, batch_size = 2048):
+        super().__init__(model, eps, alpha, mu, pop, verbose)
+        self.attack = "Proci"
+        self.neighbour = neighbour
+        self.batch_size = batch_size
+
+    def get_logits(self, inputs, labels=None, *args, **kwargs):
+        if self._normalization_applied is False:
+            inputs = self.normalize(inputs)
+        inputs_ = inputs.repeat(self.neighbour, 1, 1, 1, 1)
+        ub = torch.clamp(inputs_ + self.eps, min = 0, max = 1)
+        lb = torch.clamp(inputs_ - self.eps, min = 0, max = 1)
+        inputs_ = (ub - lb) * torch.rand_like(inputs_) + lb
+        
+        logits = []
+        for k in range(ceil(self.neighbour * len(inputs) / self.batch_size)):
+            logits.append(self.model(inputs_.view(-1, *inputs.shape[1:])[k * self.batch_size: (k + 1) * self.batch_size]))
+        logits = torch.cat(logits, dim = 0).view(self.neighbour, len(inputs), -1)
+        logits = logits.max(-1, keepdim = True)[0] == logits
+        return logits.float().mean(0)
