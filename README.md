@@ -54,6 +54,12 @@ adv_images = atk(images, labels)
 pip install torchattacks
 ```
 
+**or install from source**
+
+```
+pip install git+https://github.com/Harry24k/adversarial-attacks-pytorch.git
+```
+
 
 ## Getting Started
 
@@ -70,9 +76,9 @@ pip install torchattacks
 * **Transfer Attack on CIFAR10** ([code](https://github.com/Harry24k/adversarial-attacks-pytorch/blob/master/demo/Transfer%20Attack%20on%20CIFAR10.ipynb), [nbviewer](https://nbviewer.jupyter.org/github/Harry24k/adversarial-attacks-pytorch/blob/master/demo/Transfer%20Attack%20on%20CIFAR10.ipynb))
 
 
-#### Torchattacks supports following functions:
+### Torchattacks supports following functions:
 
-<details><summary>Targeted mode</summary><p>
+**Targeted mode**
 
 * Random target label:
 ```python
@@ -92,14 +98,22 @@ atk.set_mode_targeted_least_likely(kth_min)
 atk.set_mode_targeted_by_function(target_map_function=lambda images, labels:(labels+1)%10)
 ```
 
+* By labels:
+```python
+# label from user provide.
+atk = torchattacks.PGD(model, eps=8/255, alpha=2/255, steps=4)
+atk.set_mode_targeted_by_label()
+# shift all class loops one to the right, 1=>2, 2=>3, .., 9=>0
+target_labels = (labels + 1) % 10
+adv_images = atk(images, target_labels)
+```
+
 * Return to default:
 ```python
 atk.set_mode_default()
 ```
 
-</p></details>
-
-<details><summary>Save adversarial images</summary><p>
+**Save adversarial images**
 
 ```python
 # Save
@@ -109,9 +123,7 @@ atk.save(data_loader, save_path="./data.pt", verbose=True)
 adv_loader = atk.load(load_path="./data.pt")
 ```
 
-</p></details>
-
-<details><summary>Training/Eval during attack</summary><p>
+**Training/Eval during attack**
 
 ```python
 # For RNN-based models, we cannot calculate gradients with eval mode.
@@ -119,10 +131,8 @@ adv_loader = atk.load(load_path="./data.pt")
 atk.set_training_mode(model_training=False, batchnorm_training=False, dropout_training=False)
 ```
 
-</p></details>
 
-
-<details><summary>Make a set of attacks</summary><p>
+**Make a set of attacks**
 
 * Strong attacks
 ```python
@@ -145,13 +155,11 @@ atk2 = torchattacks.PGD(model, eps=8/255, alpha=2/255, iters=40, random_start=Tr
 atk = torchattacks.MultiAttack([atk1, atk2])
 ```
 
-</p></details>
 
 
+### Torchattacks also supports collaboration with other attack packages.
 
-#### Torchattacks also supports collaboration with other attack packages.
-
-<details><summary>FoolBox</summary><p>
+**FoolBox**
 
 https://github.com/bethgelab/foolbox
 
@@ -187,9 +195,7 @@ class L2BrendelBethge(Attack):
 atk = L2BrendelBethge(model)
 ```
 
-</p></details>
-
-<details><summary>Adversarial-Robustness-Toolbox (ART)</summary><p>
+**Adversarial-Robustness-Toolbox (ART)**
 
 https://github.com/IBM/adversarial-robustness-toolbox
 
@@ -225,10 +231,6 @@ class JSMA(Attack):
 atk = JSMA(model)
 ```
 
-</p></details>
-
-
-
 ### :fire: List of implemented papers
 
 The distance measure in parentheses.
@@ -261,7 +263,8 @@ The distance measure in parentheses.
 |     **Jitter**<br />(Linf)      | Exploring Misclassifications of Robust Neural Networks to Enhance Adversarial Attacks ([Schwinn, Leo, et al., 2021](https://arxiv.org/abs/2105.10304))    |                                                                                                                        |
 |       **Pixle**<br />(L0)       | Pixle: a fast and effective black-box attack based on rearranging pixels ([Pomponi, Jary, et al., 2022](https://arxiv.org/abs/2202.02236))                |                                                                                                                        |
 | **LGV**<br />(Linf, L2, L1, L0) | LGV: Boosting Adversarial Example Transferability from Large Geometric Vicinity ([Gubri, et al., 2022](https://arxiv.org/abs/2207.13129))                 | :heart_eyes: Contributor [Martin Gubri](https://github.com/Framartin)                               |
-
+| **SPSA**<br />(Linf) | Adversarial Risk and the Dangers of Evaluating Against Weak Attacks ([Uesato, Jonathan, et al., 2018](https://arxiv.org/abs/1802.05666))                 | :heart_eyes: Contributor [Riko Naka](https://github.com/rikonaka)                               |
+| **JSMA**<br /> | The Limitations of Deep Learning in Adversarial Settings ([Papernot, Nicolas, et al., 2016](https://arxiv.org/abs/1511.07528v1))                 | :heart_eyes: Contributor [Riko Naka](https://github.com/rikonaka)                               |
 
 
 ## Performance Comparison
@@ -270,6 +273,7 @@ For a fair comparison, [Robustbench](https://github.com/RobustBench/robustbench)
 
 * **Foolbox**: [505](https://scholar.google.com/scholar?q=Foolbox%3A%20A%20Python%20toolbox%20to%20benchmark%20the%20robustness%20of%20machine%20learning%20models.%20arXiv%202018) citations and last update 2022.10.
 * **ART**: [262](https://scholar.google.com/scholar?cluster=5391305326811305758&hl=ko&as_sdt=0,5&sciodt=0,5) citations and last update 2022.10.
+      
 
 Robust accuracy against each attack and elapsed time on the first 50 images of CIFAR10. For L2 attacks, the average L2 distances between adversarial images and the original images are recorded. All experiments were done on GeForce RTX 2080. For the latest version, please refer to here ([code](https://github.com/Harry24k/adversarial-attacks-pytorch/blob/master/demos/Performance%20Comparison%20(CIFAR10).ipynb), [nbviewer](https://nbviewer.jupyter.org/github/Harry24k/adversarial-attacks-pytorch/blob/master/demos/Performance%20Comparison%20(CIFAR10).ipynb)).
 
@@ -291,6 +295,27 @@ Robust accuracy against each attack and elapsed time on the first 50 images of C
 <sup>*</sup> Note that Foolbox returns accuracy and adversarial images simultaneously, thus the *actual* time for generating adversarial images  might be shorter than the records.
 
 <sup>**†**</sup>Considering that the binary search algorithm for const `c` can be time-consuming, torchattacks supports MutliAttack for grid searching `c`.
+
+
+
+To push further, I introduce [**Rai-toolbox**](https://scholar.google.com/scholar_lookup?arxiv_id=2201.05647), which is newly added package!
+
+| Attack      | Package      | Time/step (accuracy) |
+| ----------- | ------------ | -------------------- |
+| FGSM (Linf) | rai-toolbox  | **58 ms** (0%)       |
+|             | Torchattacks | 81 ms (0%)           |
+|             | Foolbox      | 105 ms (0%)          |
+|             | ART          | 83 ms (0%)           |
+| PGD (Linf)  | rai-toolbox  | **58 ms** (44%)      |
+|             | Torchattacks | 79 ms (44%)          |
+|             | Foolbox      | 82 ms (44%)          |
+|             | ART          | 90 ms (44%)          |
+| PGD (L2)    | rai-toolbox  | **58 ms** (70%)      |
+|             | Torchattacks | 81 ms (70%)          |
+|             | Foolbox      | 82 ms (70%)          |
+|             | ART          | 89 ms (70%)          |
+
+> The rai-toolbox takes a unique approach to gradient-based perturbations: they are implemented in terms of [parameter-transforming optimizers](https://mit-ll-responsible-ai.github.io/responsible-ai-toolbox/ref_optim.html) and [perturbation models](https://mit-ll-responsible-ai.github.io/responsible-ai-toolbox/ref_perturbation.html). This enables users to implement diverse algorithms (like [universal perturbations](https://mit-ll-responsible-ai.github.io/responsible-ai-toolbox/how_to/univ_adv_pert.html) and [concept probing with sparse gradients](https://mit-ll-responsible-ai.github.io/responsible-ai-toolbox/tutorials/ImageNet-Concept-Probing.html)) using the same paradigm as a standard PGD attack.
 
 
 
@@ -318,6 +343,7 @@ If you use this package, please cite the following BibTex ([SemanticScholar](htt
     * [https://github.com/BorealisAI/advertorch](https://github.com/BorealisAI/advertorch): Adversarial attack package made by [BorealisAI](https://www.borealisai.com/en/). **Pytorch available.**
     * [https://github.com/DSE-MSU/DeepRobust](https://github.com/DSE-MSU/DeepRobust): Adversarial attack (especially on GNN) package made by [BorealisAI](https://www.borealisai.com/en/). **Pytorch available.**
     * https://github.com/fra31/auto-attack: Set of attacks that is believed to be the strongest in existence. **TensorFlow, Pytorch available.**
+    * https://github.com/mit-ll-responsible-ai/responsible-ai-toolbox/: PyTorch-centric tools for evaluating and enhancing both the robustness and the explainability of AI models. **Pytorch available.**
     
     
     

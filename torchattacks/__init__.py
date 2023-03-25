@@ -24,12 +24,14 @@ from .attacks.vmifgsm import VMIFGSM
 from .attacks.vnifgsm import VNIFGSM
 from .attacks.cfgsm import CFGSM
 from .attacks.bruteforce import BruteForceUniform
+from .attacks.spsa import SPSA
 
 # L2 attacks
 from .attacks.cw import CW
 from .attacks.pgdl2 import PGDL2
 from .attacks.pgdrsl2 import PGDRSL2
 from .attacks.deepfool import DeepFool
+from .attacks.jsma import JSMA
 
 # L0 attacks
 from .attacks.sparsefool import SparseFool
@@ -45,14 +47,14 @@ from .attacks.square import Square
 from .wrappers.multiattack import MultiAttack
 from .wrappers.lgv import LGV
 
-__version__ = '3.3.0'
+__version__ = '3.4.0'
 __all__ = [
     "VANILA", "GN",
 
     "FGSM", "BIM", "RFGSM", "PGD", "EOTPGD", "FFGSM",
     "TPGD", "MIFGSM", "UPGD", "APGD", "APGDT", "DIFGSM",
     "TIFGSM", "Jitter", "NIFGSM", "PGDRS", "SINIFGSM",
-    "VMIFGSM", "VNIFGSM",
+    "VMIFGSM", "VNIFGSM", "SPSA", "JSMA",
 
     "CW", "PGDL2", "DeepFool", "PGDRSL2",
 
