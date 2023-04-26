@@ -9,7 +9,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setuptools.setup(
     name = 'torchattacks',
-    version = '3.4.0',
+    version = '3.4.1',
     description='Torchattacks is a PyTorch library that provides adversarial attacks to generate adversarial examples.',
     author = 'Harry Kim',
     author_email='24k.harry@gmail.com',
@@ -20,7 +20,7 @@ setuptools.setup(
                'dlr', 'apgd', 'fab', 'square', 'autoattack', 'difgsm', 'pixle'
               ],
     install_requires=[
-        'torch>=1.7.1', 'torchvision>=0.8.2', 'scipy>=0.14.0', 'tqdm~=4.56.1',
+        'torch>=1.7.1', 'torchvision>=0.8.2', 'scipy>=0.14.0', 'tqdm>=4.56.1',
         'requests~=2.25.1', 'numpy>=1.19.4',
     ],
     python_requires = '>=3',

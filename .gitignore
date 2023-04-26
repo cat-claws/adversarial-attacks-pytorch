@@ -20,4 +20,8 @@ autoattack/*
 demo/_*
 demo/data/*
 demo/models/*
+<<<<<<< HEAD
+=======
+demo/torchdefenses/*
+>>>>>>> c4da6a95546283992a3d1816ae76a0cd4dfc2d8b
 TODO.txt

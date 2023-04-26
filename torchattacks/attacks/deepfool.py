@@ -8,23 +8,18 @@ class DeepFool(Attack):
     r"""
     'DeepFool: A Simple and Accurate Method to Fool Deep Neural Networks'
     [https://arxiv.org/abs/1511.04599]
-
     Distance Measure : L2
-
     Arguments:
         model (nn.Module): model to attack.
         steps (int): number of steps. (Default: 50)
         overshoot (float): parameter for enhancing the noise. (Default: 0.02)
-
     Shape:
         - images: :math:`(N, C, H, W)` where `N = number of batches`, `C = number of channels`,        `H = height` and `W = width`. It must have a range [0, 1].
         - labels: :math:`(N)` where each value :math:`y_i` is :math:`0 \leq y_i \leq` `number of labels`.
         - output: :math:`(N, C, H, W)`.
-
     Examples::
         >>> attack = torchattacks.DeepFool(model, steps=50, overshoot=0.02)
         >>> adv_images = attack(images, labels)
-
     """
     def __init__(self, model, steps=50, overshoot=0.02):
         super().__init__("DeepFool", model)
@@ -32,12 +27,17 @@ class DeepFool(Attack):
         self.overshoot = overshoot
         self.supported_mode = ['default']
 
-    def forward(self, images, labels, return_target_labels=False):
+    def forward(self, images, labels):
         r"""
         Overridden.
         """
-        self._check_inputs(images)
+        adv_images, target_labels = self.forward_return_target_labels(images, labels)
+        return adv_images
 
+    def forward_return_target_labels(self, images, labels):
+        r"""
+        Overridden.
+        """
         images = images.clone().detach().to(self.device)
         labels = labels.clone().detach().to(self.device)
 
@@ -62,11 +62,7 @@ class DeepFool(Attack):
             curr_steps += 1
 
         adv_images = torch.cat(adv_images).detach()
-
-        if return_target_labels:
-            return adv_images, target_labels
-
-        return adv_images
+        return adv_images, target_labels
 
     def _forward_indiv(self, image, label):
         image.requires_grad = True
@@ -89,13 +85,12 @@ class DeepFool(Attack):
         w_prime = w_k - w_0
         value = torch.abs(f_prime) \
                 / torch.norm(nn.Flatten()(w_prime), p=2, dim=1)
-        value[label] = float('inf')
         _, hat_L = torch.min(value, 0)
 
         delta = (torch.abs(f_prime[hat_L])*w_prime[hat_L] \
                  / (torch.norm(w_prime[hat_L], p=2)**2))
 
-        target_label = hat_L
+        target_label = hat_L if hat_L < label else hat_L+1
 
         adv_image = image + (1+self.overshoot)*delta
         adv_image = torch.clamp(adv_image, min=0, max=1).detach()
