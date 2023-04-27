@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torchvision.transforms as T
 
 from ..attack import Attack
 from scipy.stats import binomtest
@@ -7,8 +8,8 @@ from transformers.utils import ModelOutput
 
 class BruteForceUniform(Attack):
     r"""
-    BruteForceUniform in the paper 'Explaining and harnessing adversarial examples'
-    [https://arxiv.org/abs/1412.6572]
+    BruteForceUniform in the paper 'xx'
+    [https://arxiv.org/abs/xx]
 
     Distance Measure : Linf
 
@@ -26,7 +27,7 @@ class BruteForceUniform(Attack):
         >>> adv_images = attack(images, labels)
 
     """
-    def __init__(self, model, eps=8/255, alpha = 1e-2, mu = 0.95, pop=128, verbose=False):
+    def __init__(self, model, eps=8/255, alpha = 1e-2, mu = 5e-2, pop=128, verbose=False):
         super().__init__("BruteForceUniform", model)
         self.eps = eps
         self.alpha = alpha
@@ -35,10 +36,22 @@ class BruteForceUniform(Attack):
         self.verbose = verbose
         self.supported_mode = ['default', 'targeted']
 
+    def sample(self, x):
+        xs = x.repeat(self.pop // len(x), 1, 1, 1, 1)
+        ub = torch.clamp(x + self.eps, min = 0, max = 1)
+        lb = torch.clamp(x - self.eps, min = 0, max = 1)
+        xs = (ub - lb) * torch.rand_like(xs) + lb
+        xs = (xs * 255).int() / 255.
+        return xs
+
     def forward(self, images, labels):
         r"""
         Overridden.
         """
+        func = lambda k, n: bool(binomtest(k, n, p=self.mu, alternative='two-sided').pvalue < 2 * self.alpha)
+        import time
+        print(time.time())
+
         images = images.clone().detach().to(self.device)
         labels = labels.clone().detach().to(self.device)
 
@@ -54,11 +67,7 @@ class BruteForceUniform(Attack):
             while not rejected.all():
                 
                 x = images[~rejected]
-                xs = x.repeat(self.pop // len(x), 1, 1, 1, 1)
-                ub = torch.clamp(x + self.eps, min = 0, max = 1)
-                lb = torch.clamp(x - self.eps, min = 0, max = 1)
-                xs = (ub - lb) * torch.rand_like(xs) + lb
-                xs = (xs * 255).int() / 255.
+                xs = self.sample(x)                
 
                 outputs = self.get_logits(xs.view(-1, *xs.shape[2:])).view(xs.size(0), xs.size(1), -1)
                 preds = outputs.argmax(-1) == labels[~rejected]
@@ -68,15 +77,30 @@ class BruteForceUniform(Attack):
                 K.masked_scatter_(~rejected, K[~rejected] + preds.sum(dim = 0))
                 N.masked_scatter_(~rejected, N[~rejected] + len(outputs))
 
-                for i in range(len(images)):
-                    if not rejected[i]:
-                        rejected[i] = bool(binomtest(K[i], N[i], p=self.mu, alternative='two-sided').pvalue < self.alpha)
+                rejected = torch.tensor(list(map(func, (N - K).tolist(), N.tolist())), device = rejected.device)
 
                 if self.verbose:
                     print(f'rejected: {round(rejected.float().mean().item(), 5)}; K<N: {round((K<N).float().mean().item(), 5)}', K.sum().item())
 
+        return ModelOutput(adv_images = adv_images, K = K, N = N, certified = (1 - K/N) < self.mu, mu = self.mu, alpha = self.alpha)
 
-        return ModelOutput(adv_images = adv_images, K = K, N = N, rejected = rejected)
+class BruteForceRandomRotation(BruteForceUniform):
+
+    def sample(self, x):
+        num = self.pop // len(x)
+        return torch.stack(list(map(
+            T.RandomRotation(degrees=self.eps),
+            [x] * num
+        )))
+
+    # def sample(self, x):
+    #     num = self.pop // len(x)
+    #     device = x.device
+    #     x = x.cpu()
+    #     return torch.stack(list(map(
+    #         T.RandomRotation(degrees=self.eps),
+    #         x.repeat(num, 1, 1, 1)
+    #     ))).view(num, *x.shape).to(device)
 
 from math import ceil
 
