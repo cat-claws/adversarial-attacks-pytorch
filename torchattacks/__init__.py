@@ -24,7 +24,7 @@ from .attacks.vmifgsm import VMIFGSM
 from .attacks.vnifgsm import VNIFGSM
 from .attacks.cfgsm import CFGSM
 from .attacks.spsa import SPSA
-from .attacks.bruteforce import BruteForceUniform, BruteForceRandomRotation
+from .attacks.bruteforce import BruteForceUniform, BruteForceRandomRotation, BruteForceRandomTranslation, BruteForceRandomAffine, BruteForceRandomScale
 
 # L2 attacks
 from .attacks.cw import CW

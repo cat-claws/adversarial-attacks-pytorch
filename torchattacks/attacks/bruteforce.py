@@ -49,8 +49,6 @@ class BruteForceUniform(Attack):
         Overridden.
         """
         func = lambda k, n: bool(binomtest(k, n, p=self.mu, alternative='two-sided').pvalue < 2 * self.alpha)
-        import time
-        print(time.time())
 
         images = images.clone().detach().to(self.device)
         labels = labels.clone().detach().to(self.device)
@@ -89,7 +87,8 @@ class BruteForceRandomRotation(BruteForceUniform):
     def sample(self, x):
         num = self.pop // len(x)
         return torch.stack(list(map(
-            T.RandomRotation(degrees=self.eps),
+            # T.RandomRotation(degrees=self.eps),
+            T.RandomAffine(degrees=self.eps, translate=[0.3, 0.3]),
             [x] * num
         )))
 
@@ -101,6 +100,33 @@ class BruteForceRandomRotation(BruteForceUniform):
     #         T.RandomRotation(degrees=self.eps),
     #         x.repeat(num, 1, 1, 1)
     #     ))).view(num, *x.shape).to(device)
+
+class BruteForceRandomTranslation(BruteForceUniform):
+
+    def sample(self, x):
+        num = self.pop // len(x)
+        return torch.stack(list(map(
+            T.RandomAffine(degrees=0, translate=self.eps),
+            [x] * num
+        )))
+
+class BruteForceRandomAffine(BruteForceUniform):
+
+    def sample(self, x):
+        num = self.pop // len(x)
+        return torch.stack(list(map(
+            T.RandomAffine(degrees=self.eps[2], translate=self.eps[0:2]),
+            [x] * num
+        )))
+
+class BruteForceRandomScale(BruteForceUniform):
+
+    def sample(self, x):
+        num = self.pop // len(x)
+        return torch.stack(list(map(
+            T.RandomResizedCrop(size=x.shape[-1], scale=self.eps, ratio=(1, 1)),# antialias = True),
+            [x] * num
+        )))
 
 from math import ceil
 
