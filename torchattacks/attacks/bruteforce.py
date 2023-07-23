@@ -57,8 +57,7 @@ class BruteForceUniform(Attack):
 
         rejected = torch.zeros_like(labels).bool()
 
-        K = torch.zeros_like(labels)
-        N = torch.zeros_like(labels)
+        K = None
 
         with torch.no_grad():
 
@@ -68,19 +67,24 @@ class BruteForceUniform(Attack):
                 xs = self.sample(x)                
 
                 outputs = self.get_logits(xs.view(-1, *xs.shape[2:])).view(xs.size(0), xs.size(1), -1)
-                preds = outputs.argmax(-1) == labels[~rejected]
+                preds = outputs.argmax(-1)
+                # preds = outputs.argmax(-1) == labels[~rejected]
+                # adv_images[~rejected] = torch.gather(xs, 0, preds.int().argmin(0).view(-1, 1, 1, 1).expand(1, *xs.shape[1:])).squeeze(0)
+
+                if K is None:
+                    K = preds
+                else:
+                    K.masked_scatter_(~rejected.unsqueeze(1).expand_as(K), K[~rejected.unsqueeze(1).expand_as(K)] + preds.flatten())
                 
-                adv_images[~rejected] = torch.gather(xs, 0, preds.int().argmin(0).view(-1, 1, 1, 1).expand(1, *xs.shape[1:])).squeeze(0)
+                en = K.int().sum(1)
+                ex = en - K.int().max(1)[0]
 
-                K.masked_scatter_(~rejected, K[~rejected] + preds.sum(dim = 0))
-                N.masked_scatter_(~rejected, N[~rejected] + len(outputs))
-
-                rejected = torch.tensor(list(map(func, (N - K).tolist(), N.tolist())), device = rejected.device)
+                rejected = torch.tensor(list(map(func, ex.tolist(), en.tolist())), device = rejected.device)
 
                 if self.verbose:
                     print(f'rejected: {round(rejected.float().mean().item(), 5)}; K<N: {round((K<N).float().mean().item(), 5)}', K.sum().item())
 
-        return ModelOutput(adv_images = adv_images, K = K, N = N, certified = (1 - K/N) < self.mu, mu = self.mu, alpha = self.alpha)
+        return ModelOutput(adv_images = None, K = K, N = N, certified = (1 - K/N) < self.mu, mu = self.mu, alpha = self.alpha)
 
 class BruteForceRandomRotation(BruteForceUniform):
 

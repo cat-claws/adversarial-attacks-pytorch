@@ -24,7 +24,12 @@ from .attacks.vmifgsm import VMIFGSM
 from .attacks.vnifgsm import VNIFGSM
 from .attacks.cfgsm import CFGSM
 from .attacks.spsa import SPSA
+<<<<<<< HEAD
 from .attacks.bruteforce import BruteForceUniform, BruteForceRandomRotation, BruteForceRandomTranslation, BruteForceRandomAffine, BruteForceRandomScale
+=======
+from.attacks.pifgsm import PIFGSM
+from.attacks.pifgsmplusplus import PIFGSMPLUSPLUS
+>>>>>>> 3c8e03fdf6688bfa4e4ebfc6a63762df0ad258b0
 
 # L2 attacks
 from .attacks.cw import CW
@@ -58,7 +63,7 @@ __all__ = [
     "FGSM", "BIM", "RFGSM", "PGD", "EOTPGD", "FFGSM",
     "TPGD", "MIFGSM", "UPGD", "APGD", "APGDT", "DIFGSM",
     "TIFGSM", "Jitter", "NIFGSM", "PGDRS", "SINIFGSM",
-    "VMIFGSM", "VNIFGSM", "SPSA", "JSMA", "EADL1", "EADEN",
+    "VMIFGSM", "VNIFGSM", "SPSA", "JSMA", "EADL1", "EADEN", "PIFGSM", "PIFGSMPLUSPLUS",
 
     "CW", "PGDL2", "DeepFool", "PGDRSL2",
 
