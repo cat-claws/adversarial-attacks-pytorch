@@ -24,12 +24,8 @@ from .attacks.vmifgsm import VMIFGSM
 from .attacks.vnifgsm import VNIFGSM
 from .attacks.cfgsm import CFGSM
 from .attacks.spsa import SPSA
-<<<<<<< HEAD
-from .attacks.bruteforce import BruteForceUniform, BruteForceRandomRotation, BruteForceRandomTranslation, BruteForceRandomAffine, BruteForceRandomScale
-=======
 from.attacks.pifgsm import PIFGSM
 from.attacks.pifgsmplusplus import PIFGSMPLUSPLUS
->>>>>>> 3c8e03fdf6688bfa4e4ebfc6a63762df0ad258b0
 
 # L2 attacks
 from .attacks.cw import CW
@@ -51,6 +47,7 @@ from .attacks.jsma import JSMA
 from .attacks.fab import FAB
 from .attacks.autoattack import AutoAttack
 from .attacks.square import Square
+from .attacks.square_ import Square as Square_
 
 # Wrapper Class
 from .wrappers.multiattack import MultiAttack
