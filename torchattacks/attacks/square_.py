@@ -56,6 +56,19 @@ class Square(Attack):
         self.supported_mode = ['default', 'targeted']
 
     def func(self, images, labels):
+        if self.loss == 'ce':
+            with torch.no_grad():
+                logits = self.get_logits(images)
+                return logits[range(len(labels)), labels] - logits.topk(2, -1).values.mean(-1)
+            # self.model.eval()
+            # with torch.no_grad():
+            #     logits = self.model(images)
+            #     y_corr = logits[torch.arange(len(labels)), labels].clone()
+            #     logits[torch.arange(len(labels)), labels] = -float('inf')
+            #     return (y_corr - logits.max(dim=-1)[0]).data.squeeze(0)
+             
+
+
         if self.loss == 'iou':
             import torchvision
 
@@ -104,7 +117,7 @@ class Square(Attack):
                 x.clamp_(0, 1)
                 x.clamp_(images[~success] - self.eps, images[~success] + self.eps)
 
-                scores = self.func(x, labels)
+                scores = self.func(x, labels[~success])
 
                 change = scores < best[~success]
 
@@ -114,7 +127,7 @@ class Square(Attack):
                 best.masked_scatter_(~success, scores)
                 adv_images.masked_scatter_(~success[:, None, None, None], x)
 
-                success = best < 0.4
+                success = best < 0
 
         if self.verbose:
             return ModelOutput(adv_images = adv_images, success = success, best = best)
