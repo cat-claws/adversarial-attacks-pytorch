@@ -59,17 +59,13 @@ class Square(Attack):
         if self.loss == 'ce':
             with torch.no_grad():
                 logits = self.get_logits(images)
-                return logits[range(len(labels)), labels] - logits.topk(2, -1).values.mean(-1)
-            # self.model.eval()
-            # with torch.no_grad():
-            #     logits = self.model(images)
-            #     y_corr = logits[torch.arange(len(labels)), labels].clone()
-            #     logits[torch.arange(len(labels)), labels] = -float('inf')
-            #     return (y_corr - logits.max(dim=-1)[0]).data.squeeze(0)
+                y_corr = logits[torch.arange(len(labels)), labels].clone()
+                logits[torch.arange(len(labels)), labels] = -float('inf')
+                return y_corr - logits.max(dim=-1).values
              
 
 
-        if self.loss == 'iou':
+        elif self.loss == 'iou':
             import torchvision
 
             boxes = self.model(images)
