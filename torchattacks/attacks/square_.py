@@ -57,22 +57,27 @@ class Square(Attack):
         self.supported_mode = ['default', 'targeted']
 
     def func(self, images, labels):
-        if self.loss == 'ce':
-            with torch.no_grad():
+        with torch.no_grad():
+            if self.loss == 'ce':
                 logits = self.get_logits(images)
                 y_corr = logits[torch.arange(len(labels)), labels].clone()
                 logits[torch.arange(len(labels)), labels] = -float('inf')
                 return y_corr - logits.max(dim=-1).values
-             
+
+            elif self.loss == 'cos':
+                feature = self.model(images)
+                return F.cosine_similarity(feature, labels) - 0.27
+
+                
 
 
-        elif self.loss == 'iou':
+            elif self.loss == 'iou':
 
-            boxes = self.model(images)
-            boxes_ = unpad_sequence(boxes)
-            labels_ = unpad_sequence(labels)
-            
-            return torch.stack([torchvision.ops.box_iou(b, l).max() for b, l in zip(boxes_, labels_)]) - 0.4
+                boxes = self.model(images)
+                boxes_ = unpad_sequence(boxes)
+                labels_ = unpad_sequence(labels)
+                
+                return torch.stack([torchvision.ops.box_iou(b, l).max() for b, l in zip(boxes_, labels_)]) - 0.4
 
 
     def forward(self, images, labels):
