@@ -3,6 +3,7 @@ import random
 
 import torch
 import torch.nn.functional as F
+import torchvision
 
 from transformers.utils import ModelOutput
 
@@ -66,13 +67,12 @@ class Square(Attack):
 
 
         elif self.loss == 'iou':
-            import torchvision
 
             boxes = self.model(images)
             boxes_ = unpad_sequence(boxes)
             labels_ = unpad_sequence(labels)
             
-            return torch.stack([torchvision.ops.box_iou(b, l).max() for b, l in zip(boxes_, labels_)])
+            return torch.stack([torchvision.ops.box_iou(b, l).max() for b, l in zip(boxes_, labels_)]) - 0.4
 
 
     def forward(self, images, labels):
