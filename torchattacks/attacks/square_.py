@@ -68,9 +68,17 @@ class Square(Attack):
                 feature = self.model(images)
                 return F.cosine_similarity(feature, labels) - 0.27
 
+            elif self.loss == 'iou_':
+                outputs = self.model(images)
+                # outputs = [{k: v.to('cpu') for k, v in t.items()} for t in outputs]
+                boxes_ = [p['boxes'][p['scores'] > .5] for p in outputs]
+                labels_ = unpad_sequence(labels)
                 
+                return torch.stack([
+                    torch.cat((torchvision.ops.box_iou(b, l).flatten(), torch.tensor([0], device = b.device))).max() for b, l in zip(boxes_, labels_)
+                ]) - 0.4
 
-
+                
             elif self.loss == 'iou':
 
                 boxes = self.model(images)
@@ -130,11 +138,14 @@ class Square(Attack):
 
                 success = best < 0
 
-        if self.verbose:
-            return ModelOutput(adv_images = adv_images, success = success, best = best)
+                torch.cuda.empty_cache()
+
+                if sum(~success) == 0:
+                    return adv_images if not self.verbose else ModelOutput(adv_images = adv_images, success = success, best = best)
 
 
-        return adv_images
+        return adv_images if not self.verbose else ModelOutput(adv_images = adv_images, success = success, best = best)
+
 
 def unpad_sequence(padded_sequences, padding_token = -1):
 
