@@ -73,19 +73,11 @@ class Square(Attack):
 
             elif self.loss == 'iou':
 
-<<<<<<< HEAD
-            boxes = self.model(images)
-            boxes_ = unpad_sequence(boxes)
-            labels_ = unpad_sequence(labels)
-            
-            return torch.stack([torchvision.ops.box_iou(b, l).max() for b, l in zip(boxes_, labels_)]) - 0.4
-=======
                 boxes = self.model(images)
                 boxes_ = unpad_sequence(boxes)
                 labels_ = unpad_sequence(labels)
                 
                 return torch.stack([torchvision.ops.box_iou(b, l).max() for b, l in zip(boxes_, labels_)]) - 0.4
->>>>>>> b6865e807167077ca45f881a8a2e8821a2c31ce3
 
 
     def forward(self, images, labels):
